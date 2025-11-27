@@ -7,11 +7,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -19,20 +14,21 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 @layer base {
+  .page-container {
+    @apply mx-auto w-full p-4 lg:px-8 lg:py-8 md:w-190 lg:w-6xl;
+  }
+
   .ring-standard {
     @apply ring-1 ring-gray-200 dark:ring-gray-800;
   }
 
   .background-standard {
     @apply bg-neutral-100 dark:bg-neutral-900;
+  }
+
+  .background-interactive {
+    @apply transition bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 hover:dark:bg-neutral-700;
   }
 
   .text-standard {
