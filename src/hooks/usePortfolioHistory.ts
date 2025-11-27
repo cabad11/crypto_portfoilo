@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
 import { usePortfolio } from './usePortfolio';
-import COINGECKO_ID_MAP from '@/utils/web3/coingeckoIdMap';
+import COINGECKO_ID_MAP from '@/constants/coingeckoIdMap';
 
 export type Period = '1d' | '7d' | '30d' | '90d';
 
@@ -69,7 +69,6 @@ export function usePortfolioHistory(period: Period = '7d') {
         const point = item.history[i] || item.history[item.history.length - 1];
         if (point) {
           totalValue += point.price * data.assets.find(a => a.symbol === item.symbol)!.balance;
-          console.log(item.symbol, totalValue);
         }
       });
 

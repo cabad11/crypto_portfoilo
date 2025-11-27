@@ -8,7 +8,7 @@ const MobileMenu = dynamic(() => import('./components/MobileMenu'), { ssr: false
 
 export const MENU_ITEMS: { label: string, href: string }[] = [
   { label: 'Dashboard', href: '/' },
-  { label: 'Swap', href: '/portfolio' },
+  { label: 'Swap', href: '/swap' },
   { label: 'Transactions', href: '/history' },
   { label: 'NFTs', href: '/nft' },
 ];

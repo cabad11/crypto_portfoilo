@@ -1,4 +1,4 @@
-import COINGECKO_ID_MAP from '@/utils/web3/coingeckoIdMap';
+import COINGECKO_ID_MAP from '@/constants/coingeckoIdMap';
 import { NextRequest, NextResponse } from 'next/server';
 
 const REVALIDATE_SECONDS = 60;

@@ -21,8 +21,10 @@ export default function RootLayout({
         className="antialiased"
       >
         <AppProviders>
-          <Header />
-          {children}
+          <div className="min-h-screen bg-zinc-50 font-sans dark:bg-gray-950">
+            <Header />
+            {children}
+          </div>
         </AppProviders>
       </body>
     </html>

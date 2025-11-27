@@ -6,9 +6,9 @@ import { useMemo } from 'react';
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getBalance } from 'wagmi/actions';
 import { config } from '@/utils/web3/wagmiConfig';
-import { ERC20_TOKENS } from '@/utils/web3/tokens';
-import { CHAINS } from '@/utils/web3/chains';
-import COINGECKO_ID_MAP from '@/utils/web3/coingeckoIdMap';
+import { ERC20_TOKENS } from '@/constants/tokens';
+import { CHAINS } from '@/constants/chains';
+import COINGECKO_ID_MAP from '@/constants/coingeckoIdMap';
 
 type ASSET_DATA = {
   chainId: number
