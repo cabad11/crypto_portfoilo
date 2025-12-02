@@ -20,11 +20,11 @@ export const DAYS_MAP: Record<Period, number> = {
 };
 
 export function usePortfolioHistory(period: Period = '7d') {
-  const { data, isLoading } = usePortfolio();
+  const { data, isPending, isError, refetch } = usePortfolio();
 
   const historyQueries = useQueries({
     queries: (data?.assets || [])
-      .filter(asset => asset.balance > 0.0001)
+      .filter(asset => +asset.balance > 0.0001)
       .map(asset => ({
         queryKey: ['coingecko-history', asset.symbol, period],
         queryFn: async () => {
@@ -33,7 +33,7 @@ export function usePortfolioHistory(period: Period = '7d') {
 
           const days = DAYS_MAP[period];
           const res = await fetch(
-            `/api/coingecko/coins/${id}/market_chart?vs_currency=usd&days=${days}&interval=daily`,
+            `/api/coingecko/coins/${id}/market_chart?vs_currency=usd&days=${days}${days <= 1 ? '' : '&interval=daily'}`,
           );
           if (!res.ok) return null;
           const json = await res.json();
@@ -46,42 +46,49 @@ export function usePortfolioHistory(period: Period = '7d') {
             })),
           };
         },
-        enabled: !!data && !isLoading,
+        enabled: !!data && !isPending,
         staleTime: 5 * 60 * 1000,
       })),
   });
 
   const history = useMemo<HistoryPoint[]>(() => {
-    if (isLoading || !data || historyQueries.length === 0) return [];
+    if (isPending || !data || historyQueries.length === 0) return [];
 
     const validHistories = historyQueries
       .map(q => q.data)
       .filter(Boolean) as { symbol: string, history: { date: string, price: number }[] }[];
 
     if (validHistories.length === 0) return [];
-
     const points: HistoryPoint[] = [];
-
-    for (let i = 0; i < DAYS_MAP[period]; i++) {
+    validHistories[0].history.map((datePoint, i) => {
       let totalValue = 0;
 
       validHistories.forEach((item) => {
         const point = item.history[i] || item.history[item.history.length - 1];
         if (point) {
-          totalValue += point.price * data.assets.find(a => a.symbol === item.symbol)!.balance;
+          totalValue += point.price * +data.assets.find(a => a.symbol === item.symbol)!.balance;
         }
       });
 
       points.push({
-        date: validHistories[0].history[i]?.date || new Date().toISOString(),
+        date: datePoint.date,
         value: Number(totalValue.toFixed(2)),
       });
-    }
+    });
 
     return points;
-  }, [data, isLoading, historyQueries]);
+  }, [data, isPending, historyQueries]);
 
-  const isHistoryLoading = historyQueries.some(q => q.isLoading);
+  const isHistoryPending = historyQueries.some(q => q.isPending) || isPending;
+  const isHistoryError = historyQueries.some(q => q.isError) || isError;
 
-  return { history, isLoading: isLoading || isHistoryLoading };
+  const historyRefetch = () => {
+    if (!isError) refetch();
+    historyQueries.forEach((q) => {
+      if (q.isError) q.refetch();
+    },
+    );
+  };
+
+  return { history, isPending: isHistoryPending, isError: isHistoryError, refetch: historyRefetch };
 }

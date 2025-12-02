@@ -1,7 +1,45 @@
-Crypto portfolio tracker
+# Crypto Portfolio Tracker
 
-First, run the development server:
+A modern, multi-chain portfolio tracker inspired.  
+Supports Ethereum, Polygon, Arbitrum, Base, Optimism and many more.
 
+## Features
+- Instant wallet connection (MetaMask, WalletConnect, etc.)
+- Real-time prices and 24h change via Coingecko
+- Transaction history with network selector
+- Fully responsive + dark mode
+- Secure server-side API keys
+- Built with Next.js 14 App Router
+
+## Quick Start
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/yourname/crypto-tracker.git
+cd crypto-tracker
+```
+### 2. Copy the example environment file and fill in your API keys in .env
+```bash
+cp .env.example .env
+```
+### 4. Install dependencies
+```bash
+npm install
+```
+### 5. Run the development server
 ```bash
 npm run dev
 ```
+### 6. Build and start production
+```bash
+npm run build
+npm start
+```
+
+### Tech Stack
+-Next.js 16
+-Wagmi v2 + viem
+-Tailwind CSS
+-TanStack Query
+-Coingecko API (prices)
+-Etherscan APIs (transactions)

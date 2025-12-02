@@ -1,5 +1,5 @@
 'use client';
-import { useConnect, useAccount, Connector, Config } from 'wagmi';
+import { useConnect, useConnection, Connector, Config, useConnectors } from 'wagmi';
 import {
   Dialog,
   DialogBackdrop,
@@ -39,8 +39,9 @@ const ConnectButton = ({ connector, connect, isPending }: { connector: Connector
 };
 
 const ConnectWalletPopup = ({ open, onClose }: { open: boolean, onClose: () => void }) => {
-  const { connectors, error, connect, isPending } = useConnect();
-  const { isConnected } = useAccount();
+  const { error, connect, isPending } = useConnect();
+  const connectors = useConnectors();
+  const { isConnected } = useConnection();
   const handleClose = () => {
     if (isConnected) {
       onClose();
@@ -74,7 +75,9 @@ const ConnectWalletPopup = ({ open, onClose }: { open: boolean, onClose: () => v
             />
           ))}
           {error && (
-            <ErrorMessage message={error.message} />
+            <p className="mt-4 text-sm text-red-600 dark:text-red-400">
+              {error.message || 'Failed to connect wallet'}
+            </p>
           )}
         </div>
       </DialogPanel>

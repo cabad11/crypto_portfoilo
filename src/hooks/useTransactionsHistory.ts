@@ -1,7 +1,7 @@
 'use client';
 
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 export type Transaction = {
   hash: string
@@ -14,7 +14,7 @@ export type Transaction = {
 };
 
 export function useTransactionHistory(chainId: number) {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useConnection();
   const queryClient = useQueryClient();
 
   const refresh = () => {

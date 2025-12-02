@@ -1,4 +1,4 @@
-import { mainnet, polygon, arbitrum, base, optimism, bsc, avalanche, gnosis, fantom, zksync } from 'wagmi/chains';
+import { mainnet, polygon, arbitrum, base, optimism, bsc, avalanche, gnosis, fantom, zksync, bscTestnet, sepolia } from 'wagmi/chains';
 
 export const CHAINS = [
   mainnet,
@@ -11,4 +11,6 @@ export const CHAINS = [
   gnosis,
   fantom,
   zksync,
+  // todo remove
+  sepolia,
 ] as const;

@@ -1,34 +1,25 @@
 'use client';
 
-import Image from 'next/image';
+import { ASSET_DATA } from '@/hooks/usePortfolio';
+import { TokenLogo } from './ui/TokenLogo';
 
-type Asset = {
-  id: string
-  name: string
-  symbol: string
-  balance: number
-  value: number
-  change24h: number
-  icon: string
-};
-
-export function PortfolioCard({ asset }: { asset: Asset }) {
+export function PortfolioCard({ asset }: { asset: ASSET_DATA }) {
   const isPositive = asset.change24h >= 0;
 
   return (
     <div className="background-standard ring-standard rounded-3xl p-6 shadow hover:shadow-xl transition-shadow">
       <div className="flex items-center gap-4 mb-5">
-        <Image src={asset.icon} alt={asset.symbol} width={48} height={48} className="rounded-full" />
+        <TokenLogo chainId={asset.chainId} symbol={asset.symbol} />
         <div>
-          <h3 className="font-semibold text-standard">{asset.name}</h3>
-          <p className="text-sm text-interactive opacity-70">{asset.symbol}</p>
+          {asset.name && (<h3 className="font-semibold text-standard">{asset.name}</h3>)}
+          <p className="text-sm text-interactive">{asset.symbol}</p>
         </div>
       </div>
 
       <div className="space-y-2">
         <p className="text-2xl font-bold text-standard">
           $
-          {asset.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          {asset.valueUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })}
         </p>
         <p className="text-sm text-interactive">
           {asset.balance.toLocaleString()}

@@ -16,10 +16,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const url = `${ETHERSCAN_URL}/v2/api?chainid=${chainId}&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=${page}&offset=${PAGE_SIZE}&sort=desc&apikey=${API_KEY}`;
-    console.log('Fetching transactions from:', url);
     const res = await fetch(url, { next: { revalidate: 60 } });
     const data = await res.json();
-    console.log('Fetching transactions:', data);
     let results = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (data.status === '1') results = data.result.map((tx: any) => ({

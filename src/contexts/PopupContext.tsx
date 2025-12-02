@@ -1,7 +1,7 @@
 'use client';
-import { createContext, useCallback, useMemo, useState, useContext } from 'react';
+import { createContext, useCallback, useMemo, useState, useContext, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 const ConnectWalletPopup = dynamic(() => import('../components/ConnectWalletPopup'), { ssr: false });
 
 type PopupContextValue = {
@@ -13,8 +13,19 @@ export const PopupContext = createContext<PopupContextValue | undefined>(undefin
 const PopupProvider = ({ children }: Readonly<{
   children: React.ReactNode
 }>) => {
-  const { isConnected } = useAccount();
-  const [isWalletPopupOpen, setIsWalletPopupOpen] = useState<boolean>(!isConnected);
+  const { isConnected, isConnecting } = useConnection();
+  const [isWalletPopupOpen, setIsWalletPopupOpen] = useState<boolean>(false);
+  const hasAttemptedConnect = useRef(false);
+
+  useEffect(() => {
+    if (hasAttemptedConnect.current && !isConnecting && !isConnected) {
+      requestAnimationFrame(() => setIsWalletPopupOpen(true));
+    }
+
+    if (isConnecting) {
+      hasAttemptedConnect.current = true;
+    }
+  }, [isConnected, isConnecting]);
 
   const addWallet = useCallback(() => {
     setIsWalletPopupOpen(true);

@@ -13,7 +13,6 @@ export async function GET(
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const { path: pathParam } = await params;
-  console.log(pathParam);
   const path = pathParam.join('/');
   const searchParams = request.nextUrl.searchParams;
 

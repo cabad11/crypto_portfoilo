@@ -1,13 +1,8 @@
 import { shortenAddress } from '@/utils/format';
 import WalletAvatar from '@/components/ui/WalletAvatar';
-import { useState, useEffect, cache } from 'react';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import { useAccount, useSwitchAccount, Connector } from 'wagmi';
+import { useConnection, useConnections, useSwitchConnection } from 'wagmi';
 import { useWalletPopup } from '@/contexts/PopupContext';
-
-const getConnectorsAddereses = cache((connectors: readonly Connector[]) => {
-  return Promise.all(connectors.map((conector: Connector) => conector.getAccounts()));
-});
 
 const AddressShort = ({ address }: { address: string }) => {
   return (
@@ -18,20 +13,14 @@ const AddressShort = ({ address }: { address: string }) => {
 };
 
 const AccountsMenu = () => {
-  const [connectorsAddreses, setConnectorsAdresses] = useState<(readonly string[])[]>([]);
-  const { address: currentAddress, isConnected } = useAccount();
+  const { address: currentAddress, isConnected } = useConnection();
   const { addWallet } = useWalletPopup();
-  const { connectors, switchAccount } = useSwitchAccount();
-
+  const { switchConnection } = useSwitchConnection();
+  const connections = useConnections();
   const handleWalletClick = () => {
     addWallet();
   };
 
-  useEffect(() => {
-    getConnectorsAddereses(connectors).then((addresses) => {
-      setConnectorsAdresses(addresses);
-    });
-  }, [connectors]);
   return (
     <>
       {isConnected
@@ -43,18 +32,18 @@ const AccountsMenu = () => {
                 <AddressShort address={currentAddress as string} />
               </MenuButton>
               <MenuItems anchor="bottom" className="z-41 mt-2 w-40 origin-top-right rounded-md background-standard shadow-lg ring-standard focus:outline-none">
-                {connectors.map((connector, index) => {
-                  const address = connectorsAddreses[index]?.[0];
-                  if (!address || currentAddress === address) return null;
-                  return (
-                    <MenuItem key={connector.id}>
-                      <div key={connector.id} className="flex-center gap-2 p-2 cursor-pointer button-hover rounded-md" onClick={() => switchAccount({ connector })}>
-                        <WalletAvatar address={connectorsAddreses[index][0]} />
-                        <AddressShort address={address as string} />
-                      </div>
-                    </MenuItem>
-                  );
-                })}
+                {connections
+                  .filter(conn => conn.accounts[0] !== currentAddress)
+                  .map((connection) => {
+                    return (
+                      <MenuItem key={connection.connector.id}>
+                        <div className="flex-center gap-2 p-2 cursor-pointer button-hover rounded-md" onClick={() => switchConnection({ connector: connection.connector })}>
+                          <WalletAvatar address={connection.accounts[0]} />
+                          <AddressShort address={connection.accounts[0] as string} />
+                        </div>
+                      </MenuItem>
+                    );
+                  })}
                 <MenuItem>
                   <button
                     type="button"

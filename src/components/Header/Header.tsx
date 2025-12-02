@@ -2,15 +2,16 @@
 
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 const AccountsMenu = dynamic(() => import('./components/AccountsMenu'), { ssr: false });
 const ThemeSwitch = dynamic(() => import('./components/ThemeSwitch'), { ssr: false });
 const MobileMenu = dynamic(() => import('./components/MobileMenu'), { ssr: false });
 
 export const MENU_ITEMS: { label: string, href: string }[] = [
   { label: 'Dashboard', href: '/' },
-  { label: 'Swap', href: '/swap' },
-  { label: 'Transactions', href: '/history' },
-  { label: 'NFTs', href: '/nft' },
+  // { label: 'Swap', href: '/swap' },
+  // { label: 'Transactions', href: '/history' },
+  // { label: 'NFTs', href: '/nft' },
 ];
 
 const Header = () => {
@@ -29,7 +30,9 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center gap-3 ml-auto">
-          <AccountsMenu />
+          <Suspense fallback={<div className="h-8 w-32 skeleton-loader rounded-lg" />}>
+            <AccountsMenu />
+          </Suspense>
           <div className="hidden md:block"><ThemeSwitch /></div>
           <MobileMenu />
         </div>

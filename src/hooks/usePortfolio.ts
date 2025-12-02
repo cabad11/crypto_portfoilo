@@ -1,21 +1,22 @@
 'use client';
 
-import { useAccount } from 'wagmi';
-import { useReadContracts } from 'wagmi';
+import { useConnection, useReadContracts } from 'wagmi';
 import { useMemo } from 'react';
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getBalance } from 'wagmi/actions';
 import { config } from '@/utils/web3/wagmiConfig';
 import { ERC20_TOKENS } from '@/constants/tokens';
 import { CHAINS } from '@/constants/chains';
+import { formatUnits } from 'viem';
 import COINGECKO_ID_MAP from '@/constants/coingeckoIdMap';
 
-type ASSET_DATA = {
+export type ASSET_DATA = {
   chainId: number
-  chainName: string
+  name?: string
   symbol: string
-  balance: number
+  balance: string
   valueUSD: number
+  change24h: number
 };
 
 type PriceData = {
@@ -23,7 +24,7 @@ type PriceData = {
   change24h: number
 };
 
-const useCoingeckoPrices = () => {
+export const useCoingeckoPrices = () => {
   const symbols = new Set<string>();
 
   CHAINS.forEach((chain) => {
@@ -80,11 +81,11 @@ const ERC20_ABI = [
 ] as const;
 
 export function usePortfolio() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useConnection();
   const queryClient = useQueryClient();
-  const { data: prices } = useCoingeckoPrices();
+  const { data: prices, isError: pricesErr, refetch: pricesRefetch } = useCoingeckoPrices();
 
-  const { data: erc20Data, isLoading: erc20Loading } = useReadContracts({
+  const { data: erc20Data, isPending: erc20OPending, isError: erc20Error, refetch: erc20Refetch } = useReadContracts({
     contracts: ERC20_TOKENS.map(t => ({
       chainId: t.chainId,
       address: t.address,
@@ -118,17 +119,18 @@ export function usePortfolio() {
     nativeResults.forEach((res, i) => {
       const chain = CHAINS[i];
       const symbol = chain.nativeCurrency.symbol;
-      const balance = 1; // todo test  res.data ? Number(res.data.value) : 0;
+      const balance = res.data ? formatUnits(res.data.value, chain.nativeCurrency.decimals) : '0';
       const price = prices[symbol].price || 0;
-      const valueUSD = balance * price;
+      const valueUSD = +balance * price;
 
-      if (balance > 0.0001) {
+      if (+balance > 0.0001) {
         totalUSD += valueUSD;
         weightedChange += valueUSD * prices[symbol].change24h;
         assets.push({
           chainId: chain.id,
-          chainName: chain.name,
+          change24h: prices[symbol].change24h,
           symbol,
+          name: chain.nativeCurrency.name,
           balance,
           valueUSD,
         });
@@ -138,17 +140,18 @@ export function usePortfolio() {
     erc20Data?.forEach((result, i) => {
       const token = ERC20_TOKENS[i];
       const balanceRaw = result.result;
-      const balance = Number(balanceRaw) / 10 ** token.decimals;
+      const balance = formatUnits(balanceRaw ?? BigInt(0), token.decimals);
       const price = prices[token.symbol].price || 1;
-      const valueUSD = balance * price;
+      const valueUSD = +balance * price;
 
-      if (balance > 0.0001) {
+      if (+balance > 0.0001) {
         totalUSD += valueUSD;
         weightedChange += valueUSD * prices[token.symbol].change24h;
         assets.push({
           chainId: token.chainId,
-          chainName: CHAINS.find(c => c.id === token.chainId)?.name || 'Unknown',
+          name: token?.name,
           symbol: token.symbol,
+          change24h: prices[token.symbol].change24h,
           balance,
           valueUSD,
         });
@@ -160,7 +163,15 @@ export function usePortfolio() {
     return { totalUSD, assets, change24h: totalChange24h };
   }, [address, isConnected, prices, erc20Data, nativeResults]);
 
-  const isLoading = erc20Loading || nativeResults.some(r => r.isLoading);
+  const isPending = erc20OPending || nativeResults.some(r => r.isPending) || !isConnected;
+  const isError = nativeResults.some(r => r.isError) || erc20Error || pricesErr;
+  const refetch = () => {
+    if (pricesErr) pricesRefetch();
+    if (erc20Error) erc20Refetch();
+    nativeResults.forEach((r) => {
+      if (r.isError) r.refetch();
+    });
+  };
 
-  return { data: portfolio, isLoading, refresh };
+  return { data: portfolio, isPending, refresh, isError, refetch };
 }
